@@ -7,7 +7,8 @@ base_dir = File.dirname(__FILE__)
  'extensions',
  'pin',
  'port',
- 'board'
+ 'board',
+ 'arduino'
 ].each {|req| require File.join(base_dir,'rufirmata',req)}
 
 module Rufirmata
@@ -78,17 +79,18 @@ module Rufirmata
       options = {
         :serial_port => "/dev/ttyUSB0",
         :baud_rate => 57600,
-        :parity => 8,
-        :stop_bit => 1
+        :parity => SerialPort::NONE,
+        :data_bits => 8,
+        :stop_bits => 1
       }.merge(options)
 
       sp = options[:serial_port]
       @serial_ports[options] =
         SerialPort.new(sp,
                        options[:baud_rate],
-                       options[:parity],
-                       options[:stop_bit],
-                       SerialPort::NONE)
+                       options[:data_bits],
+                       options[:stop_bits],
+                       options[:parity])
     end
 
   end

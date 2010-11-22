@@ -79,7 +79,7 @@ module Rufirmata
             board.write_command(Rufirmata::DIGITAL_MESSAGE, pin_number, value)
         elsif mode == Rufirmata::PWM
           val = (@value * 255).to_i
-          board.write_command(Rufirmata::ANALOG_MESSAGE + pin_number, value % 128, value >> 7)
+          board.write_command(Rufirmata::ANALOG_MESSAGE + pin_number, val % 128, val >> 7)
         end
       end
     end #write

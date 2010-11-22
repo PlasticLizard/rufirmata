@@ -19,6 +19,10 @@
  #   >>> s.close()
 class FakeSerial < Array
 
+  def getc
+    read[0]
+  end
+
   def read(count=1)
     if count > 1
       val = []

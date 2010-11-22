@@ -2,7 +2,7 @@ module Rufirmata
 
   class Board
     attr_reader :serial_port, :name, :analog, :digital, :digital_ports, :board_type,
-    :taken,:firmata_version,:firmware
+    :taken,:firmata_version,:firmware, :listening
 
     def initialize(serial_port, options={})
       options[:serial_port] = serial_port
@@ -15,7 +15,7 @@ module Rufirmata
         else Rufirmata::BOARD_TYPES[:arduino]
         end
       @taken = { :analog => { }, :digital =>{ } }
-
+      @listening = false
       initialize_layout
     end
 
@@ -51,16 +51,29 @@ module Rufirmata
     end
 
     def close
+      @listening = false
       @serial_port.close()
+    end
+    alias stop close
+
+    def start_listening
+      @listening = true
+      @listener = Thread.new do
+        while @listening
+          iterate
+          sleep 0.001
+        end
+      end
+
     end
 
     # Reads and handles data from the microcontroller over the serial port.
     #This method should be called in a main loop, or in an
     #:class:`Iterator` instance to keep this boards pin values up to date
     def iterate
-      byte = @serial_port.read
-      return unless byte
-      data = byte[0]
+      data = @serial_port.getc
+      return unless data
+
       received_data = []
 
       if data < Rufirmata::START_SYSEX
@@ -69,25 +82,25 @@ module Rufirmata
         return unless handler
         received_data << (data & 0x0F)
         while received_data.length < method(handler).arity
-          received_data << @serial_port.read[0]
+          received_data << @serial_port.getc
         end
 
       elsif data == Rufirmata::START_SYSEX
 
-        data = @serial_port.read[0]
+        data = @serial_port.getc
         handler = find_handler(data)
         return unless handler
-        data = @serial_port.read[0]
+        data = @serial_port.getc
         while data != Rufirmata::END_SYSEX
           received_data << data
-          data = @serial_port.read[0]
+          data = @serial_port.getc
         end
 
       else
         handler = find_handler(data)
         return unless handler
         while received_data.length < method(handler).arity
-          received_data << @serial_port.read[0]
+          received_data << @serial_port.getc
         end
       end
 

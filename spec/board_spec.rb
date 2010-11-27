@@ -192,7 +192,37 @@ describe Rufirmata::Board do
       end
     end
 
+    describe "notifications" do
+      before :each do
+        @changes = []
+        @board.subscribe do |type,args|
+          @changes << [type,args]
+        end
+      end
 
+
+      describe "when a pin is changed" do
+        before(:each){@board.analog[0].value = 1.1}
+
+        it "should issue before and after change notifications" do
+          @changes.length.should == 2
+          @changes[0][0].should == :before_value_changed
+          @changes[1][0].should == :after_value_changed
+        end
+
+        it "should pass the pin in the event args" do
+          @changes[0][1][:pin].should == @board.analog[0]
+        end
+
+        it "should provide the previous and new values of the pin" do
+          @changes.each do |c|
+            c[1][:changes].should == { :from=>nil, :to=>1.1}
+          end
+        end
+
+      end
+    end
   end
 
 end
+

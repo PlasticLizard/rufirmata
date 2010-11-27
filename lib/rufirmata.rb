@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'serialport'
+require 'observables'
 
 base_dir = File.dirname(__FILE__)
 [

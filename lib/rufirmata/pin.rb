@@ -1,8 +1,9 @@
 module Rufirmata
   #A Pin representation
   class Pin
-    attr_reader :board, :pin_number, :pin_type, :mode, :port, :pwm
-    attr_accessor :reporting, :value
+    include Observables::Base
+
+    attr_reader :board, :pin_number, :pin_type, :mode, :port, :pwm, :reporting, :value
 
     def initialize(board,pin_number,pin_type,port = nil)
       @board = board
@@ -16,7 +17,7 @@ module Rufirmata
       if pin_type == Rufirmata::DIGITAL
         @pwm = board.board_type[:pwm_pins].include?(pin_number)
         @mode = board.board_type[:disabled_pins].include?(pin_number) ?
-          Rufirmata::UNAVAILABLE : Rufirmata::OUTPUT
+        Rufirmata::UNAVAILABLE : Rufirmata::OUTPUT
       end
     end
 
@@ -25,23 +26,45 @@ module Rufirmata
       "#{type} pin #{pin_number}"
     end
 
+
     # Set the mode of operation for the pin
     # Can be one of the pin modes: INPUT, OUTPUT, ANALOG or PWM
     def mode=(mode)
       #Can be Rufirmata::INPUT, OUTPUT, ANALOG, PWM or UNAVAILABLE
-      @mode = mode and return if mode == Rufirmata::UNAVAILABLE
-      raise "#{to_s} does not have PWN capabilities" if mode == Rufirmata::PWM and !pwm
+      return if @mode == mode #Nothing is changing, so nothing to do
+
+      raise "#{to_s} does not have PWM capabilities" if mode == Rufirmata::PWM and !pwm
       raise "#{to_s} cannot be used through Firmata" if @mode == Rufirmata::UNAVAILABLE
-      @mode = mode
-      board.write_command(Rufirmata::SET_PIN_MODE, pin_number, mode)
-      enable_reporting if mode == Rufirmata::INPUT
+
+      changing :pin_mode_changed, :changes=>{ :from=>@mode, :to=>mode } do
+        @mode = mode
+        unless mode == Rufirmata::UNAVAILABLE
+          board.write_command(Rufirmata::SET_PIN_MODE, pin_number, mode)
+          enable_reporting if mode == Rufirmata::INPUT
+        end
+      end
+
+    end
+
+    def reporting=(reporting)
+      return if @reporting == reporting
+      changing :reporting_changed, :changes=>{ :from=>@reporting, :to=>reporting } do
+        @reporting = reporting
+      end
+    end
+
+    def value=(new_value)
+      return if @value == new_value
+      changing :value_changed, :changes=>{  :from=>@value, :to=>new_value } do
+        @value = new_value
+      end
     end
 
     #Set an input pin to report values
-    def enable_reporting()
+    def enable_reporting
       raise "#{to_s} is not an input and therefore cannot report" unless mode == Rufirmata::INPUT
       if pin_type == Rufirmata::ANALOG
-        @reporting = true
+        self.reporting = true
         board.write_command(Rufirmata::REPORT_ANALOG + pin_number, 1)
       elsif port
         port.enable_reporting

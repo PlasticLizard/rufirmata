@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.rubyforge_project = '[none]'
 
   s.add_dependency "ruby-serialport"
+  s.add_dependency "observables"
 
   s.add_development_dependency 'rspec', '~> 2.1'
   s.add_development_dependency 'fuubar'

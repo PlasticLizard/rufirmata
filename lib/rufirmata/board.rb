@@ -1,6 +1,8 @@
 module Rufirmata
 
   class Board
+    include Observables::Base
+
     attr_reader :serial_port, :name, :analog, :digital, :digital_ports, :board_type,
     :taken,:firmata_version,:firmware, :listening
 
@@ -160,6 +162,13 @@ module Rufirmata
           @digital << Rufirmata::Pin.new(self, pin, Rufirmata::DIGITAL)
         end
       end
+
+      (@digital + @analog).each do |pin|
+        pin.set_observer do |sender, type, args|
+          notifier.publish type, args.merge(:pin=>sender)
+        end
+      end
+
     end #init layout
 
 

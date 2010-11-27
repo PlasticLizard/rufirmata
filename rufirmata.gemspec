@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.authors      = ["Nathan Stults"]
   s.email        = "hereiam@sonic.net"
   s.homepage     = "http://github.com/PlasticLizard/rufirmata"
-  s.summary      = "[summary]"
-  s.description  = "[description]"
+  s.summary      = "A ruby firmata client for interfacing with microcontollers running firmata compatible firmware"
+  s.description  = "A Ruby port of pyFirmata, software for interfacing with firmata-enabled microcontrollers"
 
   s.files = Dir.glob("{lib,spec}/**/*") + %w[LICENSE README.rdoc]
   s.platform     = Gem::Platform::RUBY

@@ -62,12 +62,17 @@ module Rufirmata
       @listening = true
       @listener = Thread.new do
         while @listening
-          iterate
-          sleep 0.001
+          begin
+            iterate
+            sleep 0.001
+          rescue Exception => e
+            puts e.message
+            puts e.backtrace.inspect
+          end
         end
       end
-
     end
+
 
     # Reads and handles data from the microcontroller over the serial port.
     #This method should be called in a main loop, or in an
@@ -131,7 +136,7 @@ module Rufirmata
     # bitmask wich we update the port.
     def handle_digital_message(port_number, lsb, msb)
       mask = (msb << 7) + lsb
-      self.digital_ports[port_number].update(mask)
+      self.digital_ports[port_number].update(mask) if self.digital_ports[port_number]
     end
 
     def handle_report_version(major, minor)

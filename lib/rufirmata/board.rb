@@ -19,6 +19,8 @@ module Rufirmata
       @taken = { :analog => { }, :digital =>{ } }
       @listening = false
       initialize_layout
+      #This is critical. Sending commands before the board is ready will lock it up.
+      sleep 2
     end
 
     def to_s

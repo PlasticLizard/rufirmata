@@ -3,7 +3,7 @@ require "spec_helper"
 describe Rufirmata::Pin do
   before(:each) do
     Rufirmata.stub(:create_serial_port) {  FakeSerial.new }
-    @board = Rufirmata::Board.new("/dev/ttyUSB0")
+    @board = Rufirmata::Board.new("/dev/ttyUSB0", :skip_init_delay=>true)
   end
 
   describe "notifications" do

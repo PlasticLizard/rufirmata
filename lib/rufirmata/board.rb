@@ -7,8 +7,8 @@ module Rufirmata
     :taken,:firmata_version,:firmware, :listening
 
     def initialize(serial_port, options={})
+      @options = options
       options[:serial_port] = serial_port
-      @serial_port ||= Rufirmata.create_serial_port(options)
       @name = options[:name] || serial_port
       @board_type =
         case options[:board_type]
@@ -19,8 +19,13 @@ module Rufirmata
       @taken = { :analog => { }, :digital =>{ } }
       @listening = false
       initialize_layout
-      #This is critical. Sending commands before the board is ready will lock it up.
-      sleep 2
+      connect unless options[:defer_init]
+    end
+
+    def connect
+      @serial_port ||= Rufirmata.create_serial_port(@options)
+       #This is critical. Sending commands before the board is ready will lock it up.
+      sleep 2 unless @options[:skip_init_delay]
     end
 
     def to_s

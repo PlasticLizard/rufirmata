@@ -96,7 +96,7 @@ module Rufirmata
       raise "#{to_s} cannot be used through Firmata" if mode == Rufirmata::UNAVAILABLE
       raise "#{to_s} is set up as an INPUT and therefore cannot be written to" if mode == Rufirmata::INPUT
       if (new_value != value)
-        @value = new_value
+        self.value = new_value
         if mode == Rufirmata::OUTPUT
           port ? port.write() :
             board.write_command(Rufirmata::DIGITAL_MESSAGE, pin_number, value)
